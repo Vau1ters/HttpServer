@@ -3,6 +3,50 @@ jobs:
   build:
     docker:
       - image: circleci/elixir:1.8.1
+        environment:
+            MIX_ENV: test
+      - image: circleci/postgres:11.3
+        environment:
+             POSTGRES_USER: main
+             POSTGRES_DB: todo_events
+             POSTGRES_PASSWORD:
+    working_directory: ~/app 
+
     steps:
       - checkout
-      - run: echo "A first hello"
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
+      - restore_cache:
+          keys:
+            - v1-mix-cache-{{ .Branch }}-{{ checksum "mix.lock" }}
+            - v1-mix-cache-{{ .Branch }}
+            - v1-mix-cache
+      - restore_cache:
+          keys:
+            - v1-build-cache-{{ .Branch }}
+            - v1-build-cache
+      - run: mix do deps.get, compile
+      - save_cache:
+          key: v1-mix-cache-{{ .Branch }}-{{ checksum "mix.lock" }}
+          paths: "deps"
+      - save_cache:
+          key: v1-mix-cache-{{ .Branch }}
+          paths: "deps"
+      - save_cache:
+          key: v1-mix-cache
+          paths: "deps"
+      - save_cache:
+          key: v1-build-cache-{{ .Branch }}
+          paths: "_build"
+      - save_cache:
+          key: v1-build-cache
+          paths: "_build"
+
+      - run:  # special utility that stalls main process until DB is ready
+          name: Wait for DB
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
+
+      - run: mix test  # run all tests in project
+
+      - store_test_results:  # upload junit test results for display in Test Summary
+          path: _build/test/lib/http_server # Replace with the name of your :app
