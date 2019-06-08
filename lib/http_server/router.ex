@@ -7,22 +7,22 @@ defmodule HttpServer.Router do
   plug :match
   plug :dispatch
 
-  @success %{ status: "success", message: "registered", id: 0 }
+  @success %{ status: "success", message: "registered", id: 0}
   @failure %{ status: "failure", message: "invalid date format" }
 
   post "/api/v1/event" do
     param = conn.body_params
 
     todo = HttpServer.TodoEvent.changeset(%HttpServer.TodoEvent{}, param)
-    IO.inspect todo
-    {:ok, response} = if todo.valid? do
-      {:ok, _} = HttpServer.Repo.insert(todo)
-      Jason.encode(@success)
+    if todo.valid? do
+      {:ok, struct} = HttpServer.Repo.insert(todo)
+      {:ok, response} = Jason.encode(%{@success | id: struct.id})
+      send_resp(conn, 200, response)
     else
-      Jason.encode(@failure)
+      {:ok, response} = Jason.encode(@failure)
+      send_resp(conn, 400, response)
     end
 
-    send_resp(conn, 200, response)
   end
 
   get "/api/v1/event" do

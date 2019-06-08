@@ -5,7 +5,7 @@ defmodule HttpServer.TodoEvent do
   schema "todo_events" do
       field :deadline, :string
       field :title, :string
-      field :memo, :string
+      field :memo, :string, default: ""
   end
 
   def changeset(struct, params) do
