@@ -52,8 +52,8 @@ defmodule HttpServer.RouterTest do
 
     id = Jason.decode!(conn1.resp_body)["id"]
 
-    conn = :get
-           |> conn("/api/v1/delete/#{id}", "")
+    conn = :delete
+           |> conn("/api/v1/event/#{id}", "")
            |> Router.call(@opts)
 
     assert conn.state == :sent
@@ -62,9 +62,6 @@ defmodule HttpServer.RouterTest do
   end
 
   test "delete failure" do
-    HttpServer.TodoEvent
-    |> HttpServer.Repo.delete_all
-
     conn1 = :post
     |> conn("/api/v1/event", %{deadline: "2019-06-11T14:00:00+09:00", title: "レポート提出", memo: ""})
     |> Plug.Conn.put_req_header("content-type", "application/json")
@@ -72,8 +69,8 @@ defmodule HttpServer.RouterTest do
 
     id = Jason.decode!(conn1.resp_body)["id"]
 
-    conn = :get
-           |> conn("/api/v1/delete/#{id+1}", "")
+    conn = :delete
+           |> conn("/api/v1/event/#{id+1}", "")
            |> Router.call(@opts)
 
     assert conn.state == :sent

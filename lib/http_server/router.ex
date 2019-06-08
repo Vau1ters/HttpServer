@@ -37,7 +37,7 @@ defmodule HttpServer.Router do
     send_resp(conn, 200, events)
   end
 
-  get "/api/v1/delete/:string_id" do
+  delete "/api/v1/event/:string_id" do
     id = String.to_integer(string_id)
     post = HttpServer.TodoEvent
            |> HttpServer.Repo.get(id)
