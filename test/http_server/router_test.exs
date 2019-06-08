@@ -9,6 +9,9 @@ defmodule HttpServer.RouterTest do
   @success %{ status: "success", message: "registered", id: 0 }
   @failure %{ status: "failure", message: "invalid date format" }
 
+  @success_delete %{ status: "success", message: "deleted", id: 0}
+  @failure_delete %{ status: "failure", message: "invalid id" }
+
   @todos [
     %{deadline: "2019-06-11T14:00:00+09:00", title:  "レポート提出1", memo: ""},
     %{deadline: "2019-06-11T14:00:00+09:00", title:  "レポート提出2", memo: ""},
@@ -38,6 +41,43 @@ defmodule HttpServer.RouterTest do
 
     assert conn.state == :sent
     assert conn.resp_body == Jason.encode!(@failure)
+    assert conn.status == 400
+  end
+
+  test "delete success" do
+    conn1 = :post
+    |> conn("/api/v1/event", %{deadline: "2019-06-11T14:00:00+09:00", title: "レポート提出", memo: ""})
+    |> Plug.Conn.put_req_header("content-type", "application/json")
+    |> Router.call(@opts)
+
+    id = Jason.decode!(conn1.resp_body)["id"]
+
+    conn = :get
+           |> conn("/api/v1/delete/#{id}", "")
+           |> Router.call(@opts)
+
+    assert conn.state == :sent
+    assert conn.resp_body == Jason.encode!(%{@success_delete | id: id})
+    assert conn.status == 200
+  end
+
+  test "delete failure" do
+    HttpServer.TodoEvent
+    |> HttpServer.Repo.delete_all
+
+    conn1 = :post
+    |> conn("/api/v1/event", %{deadline: "2019-06-11T14:00:00+09:00", title: "レポート提出", memo: ""})
+    |> Plug.Conn.put_req_header("content-type", "application/json")
+    |> Router.call(@opts)
+
+    id = Jason.decode!(conn1.resp_body)["id"]
+
+    conn = :get
+           |> conn("/api/v1/delete/#{id+1}", "")
+           |> Router.call(@opts)
+
+    assert conn.state == :sent
+    assert conn.resp_body == Jason.encode!(@failure_delete)
     assert conn.status == 400
   end
 
