@@ -1,6 +1,5 @@
 defmodule HttpServer.Router do
   use Plug.Router
-  alias HttpServer.Plug.VerifyRequest
 
   plug Plug.Parsers, parsers: [:urlencoded, :json],
                      pass: ["application/json"],
@@ -11,29 +10,37 @@ defmodule HttpServer.Router do
   @success %{ status: "success", message: "registered", id: 0 }
   @failure %{ status: "failure", message: "invalid date format" }
 
-  @data %{
-    events: [
-      %{id: 0, deadline: "2019-06-11T14:00:00+09:00", title: "レポート提出1", memo: ""},
-      %{id: 1, deadline: "2019-06-11T14:00:00+09:00", title: "レポート提出2", memo: ""},
-      %{id: 2, deadline: "2019-06-11T14:00:00+09:00", title: "レポート提出3", memo: ""}
-    ]
-  }
-
   post "/api/v1/event" do
     param = conn.body_params
-    {:ok, response} = Jason.encode(@success)
+
+    todo = HttpServer.TodoEvent.changeset(%HttpServer.TodoEvent{}, param)
+    IO.inspect todo
+    {:ok, response} = if todo.valid? do
+      {:ok, _} = HttpServer.Repo.insert(todo)
+      Jason.encode(@success)
+    else
+      Jason.encode(@failure)
+    end
+
     send_resp(conn, 200, response)
   end
 
   get "/api/v1/event" do
-    {:ok, events} = Jason.encode(@data)
+    events_data = HttpServer.TodoEvent
+                  |> HttpServer.Repo.all
+                  |> Enum.map(&event_to_map/1)
+
+    {:ok, events} = Jason.encode(events_data)
     send_resp(conn, 200, events)
   end
 
   get "/api/v1/event/:string_id" do
     id = String.to_integer(string_id)
-    if (@data.events |> Enum.any?(fn x -> x.id === id end)) do
-      {:ok, event} = Jason.encode(@data.events |> Enum.filter(fn x -> x.id === id end) |> hd)
+      event_row_data = HttpServer.TodoEvent
+                    |> HttpServer.Repo.get(id)
+    if (event_row_data != nil) do
+      event_data = event_row_data |> event_to_map()
+      {:ok, event} = Jason.encode(event_data)
       send_resp(conn, 200, event)
     else
       send_resp(conn, 404, "Not Found")
@@ -42,5 +49,11 @@ defmodule HttpServer.Router do
 
   match _ do
     send_resp(conn, 404, "Oops!")
+  end
+
+  def event_to_map(todo_event) do
+    todo_event
+    |> Map.from_struct()
+    |> Map.delete(:__meta__)
   end
 end

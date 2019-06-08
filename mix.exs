@@ -14,7 +14,7 @@ defmodule HttpServer.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :calendar],
       mod: {HttpServer.Application, []}
     ]
   end
@@ -28,6 +28,7 @@ defmodule HttpServer.MixProject do
       {:jason, "~> 1.1"},
       {:ecto, "~> 2.0"},
       {:postgrex, "~> 0.11"},
+      {:calendar, "~> 0.17.6"},
     ]
   end
 end

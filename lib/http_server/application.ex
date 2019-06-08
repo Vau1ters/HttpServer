@@ -9,7 +9,8 @@ defmodule HttpServer.Application do
   def start(_type, _args) do
     # List all child processes to be supervised
     children = [
-      {Plug.Cowboy, scheme: :http, plug: HttpServer.Router, options: [port: cowboy_port()]}
+      {Plug.Cowboy, scheme: :http, plug: HttpServer.Router, options: [port: cowboy_port()]},
+      HttpServer.Repo
     ]
 
     opts = [strategy: :one_for_one, name: HttpServer.Supervisor]
