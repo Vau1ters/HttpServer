@@ -45,6 +45,16 @@ defmodule HttpServer.RouterTest do
     assert conn.status == 400
   end
 
+  test "delete all" do
+    conn = :delete
+           |> conn("/api/v1/event/", "")
+           |> Router.call(@opts)
+
+    assert conn.state == :sent
+    assert conn.resp_body == Jason.encode!(%{@success_delete | id: "all"})
+    assert conn.status == 200
+  end
+
   test "delete success" do
     conn1 = :post
     |> conn("/api/v1/event", %{deadline: "2019-06-11T14:00:00+09:00", title: "レポート提出", memo: ""})

@@ -38,6 +38,14 @@ defmodule HttpServer.Router do
     send_resp(conn, 200, events)
   end
 
+  delete "/api/v1/event/" do
+    HttpServer.TodoEvent
+    |> HttpServer.Repo.delete_all
+
+    {:ok, response} = Jason.encode(%{@success_delete | id: "all"})
+    send_resp(conn, 200, response)
+  end
+
   delete "/api/v1/event/:string_id" do
     id = String.to_integer(string_id)
     post = HttpServer.TodoEvent

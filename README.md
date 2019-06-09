@@ -31,7 +31,10 @@ GET /api/v1/event
 ### イベント1件取得 API request
 GET /api/v1/event/${id}
 
-### イベント削除 API request
+### イベント全削除 API request
+DELETE /api/v1/event/
+
+### イベント1件削除 API request
 DELETE /api/v1/event/${id}
 
 ### イベント範囲指定取得 API request
