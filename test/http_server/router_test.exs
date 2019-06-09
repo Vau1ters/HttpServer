@@ -155,15 +155,15 @@ defmodule HttpServer.RouterTest do
     ]
     |> Enum.map(fn {from, to, list} ->
       range = if from != nil do
-        "?from=\""<> from <> "\"" <>
+        "?from="<> from <>
           if to != nil do
-            "&to=\"" <> to <> "\""
+            "&to=" <> to
           else
             ""
           end
       else
         if to != nil do
-          "?to=\"" <> to <> "\""
+          "?to=" <> to
         else
           ""
         end

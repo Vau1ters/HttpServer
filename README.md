@@ -34,7 +34,19 @@ GET /api/v1/event/${id}
 ### イベント削除 API request
 DELETE /api/v1/event/${id}
 
+### イベント範囲指定取得 API request
+GET /api/v1/event/?from=2019-06-10T14:00:00+09:00&to=2020-06-10T14:00:00+09:00
+
+
 ## 構成
+Plug: HTTPサーバーライブラリ
+
+Ecto: DBラッパー
+
+
 lib/http\_server/router.ex: ルーターの実装
 
 lib/http\_server/todo\_event: スキーマとvalidationの定義
+
+
+test/http\_server/router\_test.exs: 各種テスト実装
