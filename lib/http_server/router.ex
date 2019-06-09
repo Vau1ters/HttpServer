@@ -32,6 +32,7 @@ defmodule HttpServer.Router do
     events_data = HttpServer.TodoEvent
                   |> HttpServer.Repo.all
                   |> Enum.map(&event_to_map/1)
+                  |> filter_by_deadline(Map.get(conn.params, "from", ""), Map.get(conn.params, "to", ""))
 
     {:ok, events} = Jason.encode(events_data)
     send_resp(conn, 200, events)
@@ -71,6 +72,28 @@ defmodule HttpServer.Router do
 
   match _ do
     send_resp(conn, 404, "Oops!")
+  end
+
+  defp filter_by_deadline(list, from, to) do
+    from = String.replace(from, " ", "+")
+    to = String.replace(to, " ", "+")
+    list
+    |> Enum.filter(fn todo ->
+      {:ok, deadline} = Calendar.DateTime.Parse.rfc3339(todo.deadline, "Asia/Tokyo")
+      {from_state, from} = Calendar.DateTime.Parse.rfc3339(from, "Asia/Tokyo")
+      {to_state, to} = Calendar.DateTime.Parse.rfc3339(to, "Asia/Tokyo")
+
+      if from_state == :ok do
+        DateTime.compare(from, deadline) != :gt
+      else
+        true
+      end && if to_state == :ok do
+        DateTime.compare(to, deadline) != :lt
+      else
+        true
+      end
+    end)
+
   end
 
   def event_to_map(todo_event) do
