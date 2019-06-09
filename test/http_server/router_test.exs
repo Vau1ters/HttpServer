@@ -46,6 +46,13 @@ defmodule HttpServer.RouterTest do
   end
 
   test "delete all" do
+    @todos |> Enum.map(fn todo -> 
+      :post
+      |> conn("/api/v1/event", todo)
+      |> Plug.Conn.put_req_header("content-type", "application/json")
+      |> Router.call(@opts)
+    end)
+
     conn = :delete
            |> conn("/api/v1/event/", "")
            |> Router.call(@opts)
@@ -57,9 +64,9 @@ defmodule HttpServer.RouterTest do
 
   test "delete success" do
     conn1 = :post
-    |> conn("/api/v1/event", %{deadline: "2019-06-11T14:00:00+09:00", title: "レポート提出", memo: ""})
-    |> Plug.Conn.put_req_header("content-type", "application/json")
-    |> Router.call(@opts)
+            |> conn("/api/v1/event", %{deadline: "2019-06-11T14:00:00+09:00", title: "レポート提出", memo: ""})
+            |> Plug.Conn.put_req_header("content-type", "application/json")
+            |> Router.call(@opts)
 
     id = Jason.decode!(conn1.resp_body)["id"]
 
