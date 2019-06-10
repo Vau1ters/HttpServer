@@ -1,3 +1,4 @@
+[![CircleCI](https://circleci.com/gh/Skroig0010/HttpServer.svg?style=svg)](https://circleci.com/gh/Skroig0010/HttpServer)
 # HttpServer
 
 システム開発プロジェクト基礎第一の課題
